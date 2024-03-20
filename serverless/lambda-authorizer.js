@@ -8,11 +8,11 @@ exports.handler = async (event) => {
         const { username, senha } = requestBody;
 
         // Obtenção de client_id e client_secret dos headers
-        const client_id = event.headers.client_id;
-        const client_secret = event.headers.client_secret;
+        const client_id = process.env.CLIENT_ID
+        const client_secret = process.env.CLIENT_SECRET
 
         // Validar entrada
-        if (!client_id || !client_secret || !username || !senha) {
+        if (!username || !senha) {
             return {
                 statusCode: 400,
                 headers: {
@@ -52,6 +52,7 @@ exports.handler = async (event) => {
             },
             body: JSON.stringify({ token: response.AuthenticationResult.IdToken })
         };
+        
     } catch (error) {
         console.error('Erro ao autenticar o usuário', error);
         return {
