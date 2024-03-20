@@ -18,7 +18,7 @@ exports.handler = async (event) => {
                 headers: {
                     'Content-Type': 'application/json'
                 },
-                body: JSON.stringify({ message: "Mandatory parameters not found" })
+                body: JSON.stringify({ message: "Parâmetros mandatórios não encontrados" })
             };
         }
 
@@ -61,7 +61,7 @@ exports.handler = async (event) => {
             headers: {
                 'Content-Type': 'application/json'
             },
-            body: JSON.stringify({ message: error?.message || "Could not authenticate user" })
+            body: JSON.stringify({ message: error?.message || "Não foi possível autenticar o usuário" })
         };
     }
 };

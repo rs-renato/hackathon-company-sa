@@ -1,10 +1,8 @@
 const { MongoClient } = require('mongodb');
-const { CognitoJwtVerifier } = require("aws-jwt-verify");
+const { decomposeUnverifiedJwt } = require("aws-jwt-verify/jwt");
 const moment = require("moment-timezone");
 const timezone = 'America/Sao_Paulo'
 
-const client_id = process.env.CLIENT_ID
-const pool_id = process.env.POOL_ID
 const documentURL = process.env.DOCUMENTDB_URL
 const databaseName= process.env.DATABASE_NAME
 const collectionName =  process.env.COLLECTION_NAME
@@ -14,34 +12,12 @@ exports.handler = async (event) => {
     let client
     try {
 
-        let payload;
-
-         // Creating Cognito JWT verifier
-        const verifier = CognitoJwtVerifier.create({
-            userPoolId: pool_id,
-            tokenUse: "id",
-            clientId: client_id,
-        });
-
-        // Verifying and getting Cognito JWT token information
-        try {
-            payload = await verifier.verify(event.headers.Authorization);    
-            console.log(`Valid Token! Payload: ${JSON.stringify(payload)}`)
-        } catch (error) {
-            console.error(`Error validating token: ${error}`)
-            return {
-                statusCode: 403,
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({
-                    message: 'Invalid Token!'
-                })
-            };
-        }
+        // Extraction paylod from token
+        const { payload } = decomposeUnverifiedJwt(event.headers.Authorization)
+        console.log(`Payload: ${JSON.stringify(payload)}`)
         
         // Obtaining employee ID from token payload
-        const employeeId = payload['custom:matricula'];
+        const matricula = payload['custom:matricula'];
         const username = payload['custom:username'];
         
         // Connecting to DocumentDB        
@@ -53,23 +29,23 @@ exports.handler = async (event) => {
         console.log(`Querying current day clock records for this employee`)
         const result = await database.collection(collectionName)
             .find({
-                employeeId: employeeId,
-                timestamp: { $regex: `^${moment(new Date().getTime()).tz(timezone).format('YYYY-MM-DDTHH:mm')}` },
+                matricula: matricula,
+                timestamp: { $regex: `^${moment(new Date().getTime()).tz(timezone).format('YYYY-MM-DD')}` },
             })
             .sort({ timestamp: "desc" })
             .limit(1)
-            .toArray();;
+            .toArray();
 
         const previousClock = result[0];
         console.log(`previousClock: ${JSON.stringify(previousClock)}`)
 
-        // If there are already records for the current day, toggle occurrence between 'entry' and 'exit'
-        let occurrence = await previousClock?.occurrence === 'entry' ? 'exit' : 'entry';
+        // If there are already records for the current day, toggle occurrence between 'entrada' and 'saida'
+        let ocorrencia = await previousClock?.ocorrencia === 'entrada' ? 'saida' : 'entrada';
        
         let clock = {
             username: username,
-            employeeId: employeeId,
-            occurrence: occurrence,
+            matricula: matricula,
+            ocorrencia: ocorrencia,
             timestamp: moment(new Date().getTime()).tz(timezone).format('YYYY-MM-DDTHH:mm:ss')
         }
 
@@ -92,7 +68,7 @@ exports.handler = async (event) => {
             headers: {
                 'Content-Type': 'application/json'
             },
-            body: JSON.stringify({ message: "Error registering clock." })
+            body: JSON.stringify({ message: "Erro ao registrar o ponto." })
         };
     }finally{
         console.log(`Closing connection`)
