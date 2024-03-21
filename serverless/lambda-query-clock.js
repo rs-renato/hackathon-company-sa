@@ -5,15 +5,18 @@ const moment = require("moment-timezone");
 const documentURL = process.env.DOCUMENTDB_URL
 const databaseName = process.env.DATABASE_NAME
 const collectionName = process.env.COLLECTION_NAME
+let client;
 
-exports.handler = async (event) => {
-    let client;
+exports.handler = async (event) => {    
 
     try {
 
         // Extraction paylod from token
         const { payload } = decomposeUnverifiedJwt(event.headers.Authorization);
+        
         console.log(`Payload: ${JSON.stringify(payload)}`);
+        console.log(`queryStringParameters: ${JSON.stringify(event?.queryStringParameters)}`);
+        console.log(`headers: ${JSON.stringify(event?.headers)}`);
 
         // Obtaining user data from token payload
         const matricula = payload['custom:matricula'];
@@ -35,10 +38,7 @@ exports.handler = async (event) => {
         }
 
         // Connecting to DocumentDB        
-        const mongo = new MongoClient(documentURL);
-        console.log(`Conectando ao banco de dados`);
-        client = await mongo.connect(documentURL);
-        const database = client.db(databaseName);
+        const database = await initMongoClient(documentURL, databaseName)
 
         console.log(`Consultando registros de ponto de ${dataInicial} a ${dataFinal} para o funcionário ${username}`);
 
@@ -71,6 +71,8 @@ exports.handler = async (event) => {
         let registros = [];
         let totalHorasTrabalhadas = 0;
 
+        console.log(`DocumentDB Response: ${JSON.stringify(clocks)}`);
+
         // calculate working hours in daily basis
         clocks.map((registro) => {
             const datas = Object.keys(registro);
@@ -90,7 +92,7 @@ exports.handler = async (event) => {
         });
 
         // Returning success response
-        return {
+        let lambdaResponse = {
             statusCode: 200,
             headers: {
                 'Content-Type': 'application/json'
@@ -108,6 +110,9 @@ exports.handler = async (event) => {
                 registros: registros
             })
         };
+
+        console.log(`Lambda Response: ${JSON.stringify(lambdaResponse)}`);
+        return lambdaResponse
     } catch (error) {
         console.error('Erro ao visualizar registros de ponto', error);
         // Returning error in query data
@@ -125,6 +130,13 @@ exports.handler = async (event) => {
     }
 };
 
+async function initMongoClient(documentURL, databaseName) {
+    // Connecting to DocumentDB        
+    const mongo = new MongoClient(documentURL);
+    console.log(`Conectando ao banco de dados`);
+    client = await mongo.connect(documentURL);
+    return client.db(databaseName);
+}
 
 const calculateWorkingHoursInSeconds = (entrada, saida) => {
     const diff = moment(saida.timestamp).diff(moment(entrada.timestamp));
@@ -142,7 +154,6 @@ const calculateAggragateHoursInSeconds = (registrosDoDia) => {
             entrada = registro;
         } else if (registro.ocorrencia === 'saida' && entrada) {
             const duracaoSegundos = calculateWorkingHoursInSeconds(entrada, registro);
-            console.log(`duracaoSegundos: ${duracaoSegundos} -->> entrada: ${entrada.timestamp} registro: ${registro.timestamp}`)
             totalDuracaoSegundos += duracaoSegundos;
             ocorrencias.push(entrada);
             ocorrencias.push(registro);
