@@ -25,6 +25,6 @@ Este lambda é responsável pela autenticação de usuários no sistema utilizan
 
 ## Exemplos
 
-|**Requisição**|**Resposta de Sucesso**| **Resposta de Erro**|
-|----------------------------------------------------------|----------------------------------------------------------|-----------------------------------------------------------|
-|**Método:** POST<br>**URL:** /auth<br>**Headers:**<br>Content-Type: application/json<br><br>**Body:**<br>{<br>&nbsp;&nbsp;"username": "example_user",<br>&nbsp;&nbsp;"password": "example_password"<br>} | **Status:** 200 OK<br>**Headers:**<br>Content-Type: application/json<br><br>**Body:**<br>{<br>&nbsp;&nbsp;"token": "eyJraWQiOiJ4eE..."<br>} | **Status:** 400 Bad Request<br>**Headers:**<br>Content-Type: application/json<br><br>**Body:**<br>{<br>&nbsp;&nbsp;"message": "Parâmetros de usuário e/ou senha não encontrados"<br>} |
+|**Requisição**|**Resposta de Sucesso**| **Reposta Validações (400)**| **Reposta Erros (500)**|
+|----------------------------------------------------------|----------------------------------------------------------|-----------------------------------------------------------|-----------------------------------------------------------|
+|**Método:** POST<br>**URL:** /auth<br>**Headers:**<br>Content-Type: application/json<br><br>**Body:**<br>{<br>&nbsp;&nbsp;"username": "example_user",<br>&nbsp;&nbsp;"password": "example_password"<br>} | **Status:** 200 OK<br>**Headers:**<br>Content-Type: application/json<br><br>**Body:**<br>{<br>&nbsp;&nbsp;"token": "eyJraWQiOiJ4eE..."<br>} | **Status:** 400 Bad Request<br>**Headers:**<br>Content-Type: application/json<br><br>**Body:**<br>{<br>&nbsp;&nbsp;"message": "Parâmetros de usuário e/ou senha não encontrados"<br>} | **Status:** 500 Internal Server Error<br>**Headers:**<br>Content-Type: application/json<br><br>**Body:**<br>{<br>&nbsp;&nbsp;"message": "Não foi possível autenticar o usuário"<br>}|
