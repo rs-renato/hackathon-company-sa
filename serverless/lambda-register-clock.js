@@ -13,7 +13,7 @@ exports.handler = async (event) => {
     try {
 
         // Extraction paylod from token
-        const { payload } = decomposeUnverifiedJwt(event.headers.Authorization)
+        const { payload } = decomposeUnverifiedJwt(event.headers.Authorization || event.headers.authorization)
         console.log(`Payload: ${JSON.stringify(payload)}`);
         console.log(`headers: ${JSON.stringify(event?.headers)}`);
 
