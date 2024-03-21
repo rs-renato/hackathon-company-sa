@@ -40,20 +40,23 @@ exports.handler = async (event) => {
         };
 
         // Initializing Cognito service
-        const cognito = new AWS.CognitoIdentityServiceProvider({ region: process.env.AWS_REGION });
+        const cognito = initCognito({ region: process.env.AWS_REGION });
 
         // Initiating authentication
         console.log(`Authenticating user ${username} in cognito`)
         const response = await cognito.initiateAuth(params).promise();
 
         // Returning authentication token
-        return {
+        let lambdaResponse = {
             statusCode: 200,
             headers: {
                 'Content-Type': 'application/json'
             },
             body: JSON.stringify({ token: response.AuthenticationResult.IdToken })
-        };
+        }
+
+        console.log(`Lambda Response: ${JSON.stringify(lambdaResponse)}`);
+        return lambdaResponse
 
     } catch (error) {
         console.error('Error authenticating user', error);
@@ -67,3 +70,7 @@ exports.handler = async (event) => {
         };
     }
 };
+
+function initCognito(params) {
+    return new AWS.CognitoIdentityServiceProvider(params);
+}
