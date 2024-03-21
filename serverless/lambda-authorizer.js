@@ -25,8 +25,8 @@ exports.handler = async (event) => {
 
         // Generating secret hash
         const secretHash = crypto.createHmac('SHA256', client_secret)
-                                 .update(username + client_id)
-                                 .digest('base64');
+            .update(username + client_id)
+            .digest('base64');
 
         // Parameters for authentication request
         const params = {
@@ -57,7 +57,7 @@ exports.handler = async (event) => {
 
     } catch (error) {
         console.error('Error authenticating user', error);
-         // Returning authentication error
+        // Returning authentication error
         return {
             statusCode: error?.statusCode || 500,
             headers: {

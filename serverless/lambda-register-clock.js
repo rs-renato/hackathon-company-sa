@@ -4,8 +4,8 @@ const moment = require("moment-timezone");
 const timezone = 'America/Sao_Paulo'
 
 const documentURL = process.env.DOCUMENTDB_URL
-const databaseName= process.env.DATABASE_NAME
-const collectionName =  process.env.COLLECTION_NAME
+const databaseName = process.env.DATABASE_NAME
+const collectionName = process.env.COLLECTION_NAME
 
 exports.handler = async (event) => {
 
@@ -16,17 +16,17 @@ exports.handler = async (event) => {
         // Extraction paylod from token
         const { payload } = decomposeUnverifiedJwt(event.headers.Authorization)
         console.log(`Payload: ${JSON.stringify(payload)}`)
-        
-        // Obtaining employee ID from token payload
+
+        // Obtaining user data from token payload
         const matricula = payload['custom:matricula'];
         const username = payload['cognito:username'];
-        
+
         // Connecting to DocumentDB        
         const mongo = new MongoClient(documentURL);
         console.log(`Connecting to database`)
         client = await mongo.connect(documentURL);
         const database = await client.db(databaseName);
-        
+
         console.log(`Querying current day clock records for employee ${username}`)
         const result = await database.collection(collectionName)
             .find({
@@ -42,7 +42,7 @@ exports.handler = async (event) => {
 
         // If there are already records for the current day, toggle occurrence between 'entrada' and 'saida'
         let ocorrencia = await previousClock?.ocorrencia === 'entrada' ? 'saida' : 'entrada';
-       
+
         let clock = {
             username: username,
             matricula: matricula,
@@ -71,7 +71,7 @@ exports.handler = async (event) => {
             },
             body: JSON.stringify({ message: "Erro ao registrar o ponto." })
         };
-    }finally{
+    } finally {
         console.log(`Closing connection`)
         client?.close()
     }
