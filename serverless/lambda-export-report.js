@@ -47,8 +47,9 @@ const processSQSMessage = async (message) => {
 
         console.log('Invoking queryClock lambda')
         const { Payload } = await lambdaClient.send(command);
-        const queryClockReponse = JSON.parse(Buffer.from(Payload).toString());
+        console.log(`queryClock Payload: ${Payload}`)
 
+        const queryClockReponse = JSON.parse(Buffer.from(Payload).toString());
         console.log(`queryClock Response: ${JSON.stringify(queryClockReponse)}`)
 
         // send report only if could query data
@@ -64,6 +65,7 @@ const processSQSMessage = async (message) => {
 
             console.log(`SES Response: ${JSON.stringify(emailResponse)}`);
         }
+        console.log('Finalizado com sucesso');
         await Promise.resolve(1); //Placeholder for actual async work
     } catch (error) {
         console.error('Erro ao gerar relatório de registros de ponto', error);
