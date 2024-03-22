@@ -139,6 +139,11 @@ async function initMongoClient(documentURL, databaseName) {
 }
 
 const calculateWorkingHoursInSeconds = (entrada, saida) => {
+    console.log('RODRIGO');
+    console.log(`entrada: ${JSON.stringify(entrada)}`);
+    console.log(`entrada.timestamp: ${entrada.timestamp}`);
+    console.log(`saida: ${JSON.stringify(saida)}`);
+    console.log(`saida.timestamp: ${saida.timestamp}`);
     const diff = moment(saida.timestamp).diff(moment(entrada.timestamp));
     return moment.duration(diff).asSeconds();
 };
