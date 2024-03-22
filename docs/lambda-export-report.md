@@ -3,24 +3,41 @@
 Este lambda é responsável por exportar o relatório de ponto dos funcionários por e-mail, utilizando os serviços AWS Lambda e Amazon SES.
 
 ## Contrato
-- **Entrada**: Espera uma solicitação HTTP com a referência do relatório de ponto na query string.
-- **Saída de Sucesso**: Retorna um código de status 200 e um objeto JSON contendo o protocolo de envio do e-mail.
-- **Saída de Erro**: Em caso de erro, retorna um código de status 500 e uma mensagem de erro no formato JSON.
+- **Entrada**: Consume mensagens da fila SQS contendo a referência do relatório de ponto e as credenciais de autorização.
+- **Saída**: Não possui resposta direta. As mensagens processadas com sucesso são removidas da fila SQS e o relatório é enviado por e-mail.
 
 ## Funcionamento
-1. Obtém a referência do relatório de ponto da query string.
-2. Valida a presença e o formato da referência.
-3. Formata a data inicial e final do relatório.
+1. Recebe mensagens da fila SQS contendo a referência do relatório de ponto e as credenciais de autorização.
+2. Valida a presença e o formato da referência e das credenciais de autorização.
+3. Formata a data inicial e final do relatório com base na referência.
 4. Invoca a lambda `lambda-query-clock` para obter os registros de ponto dentro do período especificado.
 5. Se a consulta for bem-sucedida, gera o corpo do e-mail com as informações do relatório.
 6. Utiliza o serviço Amazon SES para enviar o e-mail com o relatório de ponto.
-7. Retorna o protocolo de envio do e-mail em caso de sucesso.
+7. Remove a mensagem processada da fila SQS.
+
 
 ## Integrações
-- Este lambda integra-se com os serviços AWS Lambda e Amazon SES para exportar o relatório de ponto por e-mail.
+- Este lambda integra-se com os serviços AWS Lambda, Amazon SES e Amazon SQS para exportar o relatório de ponto por e-mail.
+
 
 ## Exemplos
+Abaixo o exemplo de relatório enviado por email.
+```
+Olá funcionario, conforme solicitado, abaixo está o relatório de espelho de ponto:
 
-|**Requisição**|**Resposta de Sucesso**| **Resposta de Erro**|
-|--------------|------------------------|---------------------|
-|**Método:** POST<br>**URL:** /export-report?referencia=2024-03| **Status:** 200 OK<br>**Headers:**<br>Content-Type: application/json<br><br>**Body:**<br>{<br>&nbsp;&nbsp;"protocolo": "abcd-1234-efgh-5678"<br>} | **Status:** 500 Internal Server Error<br>**Headers:**<br>Content-Type: application/json<br><br>**Body:**<br>{<br>&nbsp;&nbsp;"message": "Erro gerar relatório de registros de ponto."<br>}|
+-----------------------------------------------------------------------------
+Período:    2024-03-01T00:00:00 a 2024-03-31T23:59:59
+Total de horas trabalhadas no período:  01:58:11
+-----------------------------------------------------------------------------
+
+Data:   2024-03-21
+Horas Trabalhadas:  01:58:11
+-----------------------------------------------------------------------------
+#1  Entrada:        2024-03-21T21:44:57
+#2  Saída:          2024-03-21T23:43:06
+#3  Entrada:        2024-03-21T23:43:07
+#4  Saída:          2024-03-21T23:43:09
+-----------------------------------------------------------------------------
+Atenciosamente,
+Hackathon Company SA
+```

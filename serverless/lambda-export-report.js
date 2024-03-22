@@ -2,34 +2,40 @@ const { InvokeCommand, LambdaClient, LogType } = require("@aws-sdk/client-lambda
 const { SESClient, SendEmailCommand } = require("@aws-sdk/client-ses");
 const moment = require("moment-timezone");
 
-exports.handler = async (event) => {
+exports.handler = async (event, context) => {
+
+    for (const message of event.Records) {
+        await processSQSMessage(message);
+    }
+
+    console.log(`Processing messages done`);
+};
+
+const processSQSMessage = async (message) => {
 
     try {
 
-        let lambdaResponse;
-        const referencia = event?.queryStringParameters?.referencia;
+        const body = JSON.stringify(message.body);
+        console.log(`Processed message body ${body}`);
 
-         // Validating input
-         if (!moment(referencia, "YYYY-MM", true).isValid()) {
-            // Returning validation error
-            return {
-                statusCode: 400,
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({ message: "Parâmetro referencia não encontrado ou inválido (YYYY-MM)" })
-            };
-        }
-
+        const referencia = /"referencia"\s*:\s*"([^"]+)"/.exec(message.body)[1];
+        const authorization = /"(?:Authorization|authorization)"\s*:\s*"([^"]+)"/i.exec(message.body)[1];
+        
         // Parsing a valid reference
         const [ano, mes] = referencia.split("-");
         const dataInicial = formatarData(`${ano}-${mes}-01T00:00:00`);
         const dataFinal = formatarData(moment(dataInicial).endOf('month'));
-        
-        event.queryStringParameters.dataInicial = dataInicial;
-        event.queryStringParameters.dataFinal = dataFinal;
 
-        console.log(`queryStringParameters: ${JSON.stringify(event?.queryStringParameters)}`);
+
+        const event = {
+            headers:{
+                Authorization: authorization,
+            },
+            queryStringParameters:{
+                dataInicial: dataInicial,
+                dataFinal: dataFinal
+            }
+        }
 
         const lambdaClient = initLambdaClient({ region: process.env.AWS_REGION })
 
@@ -57,52 +63,29 @@ exports.handler = async (event) => {
             let emailResponse = await sesClient.send(sendCommand);
 
             console.log(`SES Response: ${JSON.stringify(emailResponse)}`);
-
-            let lambdaResp = {
-                statusCode: 200,
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({
-                    protocolo: emailResponse.MessageId,
-                })
-            }
-
-            lambdaResponse = lambdaResp;
         }
-
-        // Returning success response
-        console.log(`Lambda Response: ${JSON.stringify(lambdaResponse)}`);
-        return lambdaResponse
-
+        await Promise.resolve(1); //Placeholder for actual async work
     } catch (error) {
         console.error('Erro ao gerar relatório de registros de ponto', error);
-        // Returning error in export responseBody
-        return {
-            statusCode: 500,
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({ message: "Erro gerar relatório de registros de ponto." })
-        };
+        throw error;
     }
-};
+}
 
-const formatarData = (data) =>{
+const formatarData = (data) => {
     return moment(data).format("YYYY-MM-DDTHH:mm:ss");
 }
 
 const initLambdaClient = (params) => {
-   return new LambdaClient(params);
+    return new LambdaClient(params);
 }
 
 const initSesClient = (params) => {
     return new SESClient(params);
- }
+}
 
 const generateEmailBody = (response) => {
     let emailBody = `Olá ${response.username}, conforme solicitado, abaixo está o relatório de espelho de ponto:\n\n`;
-    
+
     emailBody += `-----------------------------------------------------------------------------\n`
     emailBody += `Período:\t${response.periodo.dataInicial} a ${response.periodo.dataFinal}\n`;
     emailBody += `Total de horas trabalhadas no período:\t${response.periodo.totalHorasTrabalhadas}\n`;
@@ -111,7 +94,7 @@ const generateEmailBody = (response) => {
     response.registros.forEach((registro) => {
         const dataRegistro = Object.keys(registro)[0];
         const horasTrabalhadas = response.periodo.totalHorasTrabalhadas;
-        
+
         emailBody += `Data:\t${dataRegistro}\tHoras Trabalhadas:\t${registro[dataRegistro].horasTrabalhadas}\n`;
         emailBody += `-----------------------------------------------------------------------------\n`;
 
@@ -135,21 +118,22 @@ const generateEmailBody = (response) => {
 
 const createSendEmailCommand = (toAddress, fromAddress, subject, body) => {
     return new SendEmailCommand({
-      Destination: {
-        ToAddresses: [ toAddress ],
-      },
-      Message: {
-        Body: {
-          Text: {
-            Charset: "UTF-8",
-            Data: body,
-          },
+        Destination: {
+            ToAddresses: [toAddress],
         },
-        Subject: {
-          Charset: "UTF-8",
-          Data: subject,
+        Message: {
+            Body: {
+                Text: {
+                    Charset: "UTF-8",
+                    Data: body,
+                },
+            },
+            Subject: {
+                Charset: "UTF-8",
+                Data: subject,
+            },
         },
-      },
-      Source: fromAddress,
+        Source: fromAddress,
     });
-  };
+};
+

@@ -1,0 +1,23 @@
+{
+  "name": "hackathon-company-sa",
+  "version": "1.0.0",
+  "description": "hackathon-company-sa",
+  "main": "index.js",
+  "scripts": {
+    "test": "jest",
+    "test:cov": "jest --coverage --runInBand"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "aws-jwt-verify": "^4.0.1",
+    "moment-timezone": "^0.5.45",
+    "mongodb": "^6.5.0",
+    "uuid": "^9.0.1"
+  },
+  "devDependencies": {
+    "aws-sdk-mock": "^5.9.0",
+    "jest": "^29.7.0"
+  }
+}
