@@ -30,6 +30,13 @@ resource "aws_cognito_user_pool" "hackathon-company-user-pool" {
       required            = false
       mutable             = true
     }
+
+    lifecycle {
+      ignore_changes = [
+        password_policy,
+        schema
+      ]
+  }
 }
 
 resource "aws_cognito_user" "hackathon-func-user" {

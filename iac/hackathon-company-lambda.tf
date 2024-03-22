@@ -133,6 +133,7 @@ resource "aws_lambda_function" "hackathon-company-lambda-export-report" {
   environment {
     variables = {
       SES_SOURCE= aws_sesv2_email_identity.hackathon-company-ses-sender-email-identity.email_identity
+      LAMBDA_QUERY_CLOCK=aws_lambda_function.hackathon-company-lambda-query-clock.function_name
     }
   }
 }
