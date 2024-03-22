@@ -68,7 +68,5 @@ describe('Lambda Export Report', () => {
 
         expect(response.statusCode).toBe(200);
         expect(response.body).toEqual('{"protocolo":"mockedId"}');
-
     })
-
 });
