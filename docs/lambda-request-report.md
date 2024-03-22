@@ -18,8 +18,8 @@ Este lambda é responsável por receber a requisição de geração de relatóri
 
 ## Exemplos
 
-|**Requisição**|**Resposta de Sucesso**| **Reposta Validações (400)**| 
-|----------------------------------------------------------|----------------------------------------------------------|-----------------------------------------------------------|
-|**Método:** POST<br>**URL:** /request-report/?referencia=2024-03<br>**Headers:**<br>Content-Type: application/json<br> | **Status:** 200 OK<br>**Headers:**<br>Content-Type: application/json<br><br>**Body:**<br>{<br>&nbsp;&nbsp;"protocolo": "ad5e2ecb-0057-4f19-bf1a-833fbf00f56a"<br>} | **Status:** 400 Bad Request<br>**Headers:**<br>Content-Type: application/json<br><br>**Body:**<br>{<br>&nbsp;&nbsp;"message": "Parâmetro referencia não encontrado ou inválido (YYYY-MM)"<br>} |
+| **Requisição**                                                                                                          |**Resposta de Sucesso**| **Reposta Validações (400)**| 
+|-------------------------------------------------------------------------------------------------------------------------|----------------------------------------------------------|-----------------------------------------------------------|
+| **Método:** POST<br>**URL:** /ponto/relatório/?referencia=2024-03<br>**Headers:**<br>Content-Type: application/json<br> | **Status:** 200 OK<br>**Headers:**<br>Content-Type: application/json<br><br>**Body:**<br>{<br>&nbsp;&nbsp;"protocolo": "ad5e2ecb-0057-4f19-bf1a-833fbf00f56a"<br>} | **Status:** 400 Bad Request<br>**Headers:**<br>Content-Type: application/json<br><br>**Body:**<br>{<br>&nbsp;&nbsp;"message": "Parâmetro referencia não encontrado ou inválido (YYYY-MM)"<br>} |
 
 Este é um exemplo de como seria o README para a lambda de requisição de relatório de ponto, responsável por receber a requisição de geração de relatório para processamento assíncrono.
