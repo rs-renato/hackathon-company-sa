@@ -10,11 +10,11 @@ resource "aws_cognito_user_pool" "hackathon-company-user-pool" {
       }
     }
     password_policy {
-        minimum_length    = 8
-        require_lowercase = true
-        require_numbers   = true
-        require_symbols   = true
-        require_uppercase = true
+        minimum_length    = 6
+        require_lowercase = false
+        require_numbers   = false
+        require_symbols   = false
+        require_uppercase = false
     }
     
     schema {
@@ -30,6 +30,13 @@ resource "aws_cognito_user_pool" "hackathon-company-user-pool" {
       required            = false
       mutable             = true
     }
+
+    lifecycle {
+      ignore_changes = [
+        password_policy,
+        schema
+      ]
+  }
 }
 
 resource "aws_cognito_user" "hackathon-func-user" {

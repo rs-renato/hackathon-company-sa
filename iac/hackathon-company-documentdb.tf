@@ -1,8 +1,8 @@
-resource "aws_docdb_cluster" "hackathon-company-doc-cluster-pagamento" {
-  cluster_identifier = "hackathon-company-doc-cluster-pagamento"
+resource "aws_docdb_cluster" "hackathon-company-doc-cluster-clock" {
+  cluster_identifier = "hackathon-company-doc-cluster-clock"
   engine = "docdb"
   storage_type = "standard"
-  master_username      = "hackathon-company"
+  master_username      = "hackathon_company"
   master_password      = random_password.hackathon-company-random-passoword.result
   skip_final_snapshot = true
   vpc_security_group_ids = [aws_security_group.hackathon-company-security-group.id]
@@ -30,7 +30,7 @@ resource "random_password" "hackathon-company-random-passoword" {
 }
 
 resource "aws_docdb_cluster_instance" "hackathon-company-doc-cluster-instance" {
-  cluster_identifier = aws_docdb_cluster.hackathon-company-doc-cluster-pagamento.cluster_identifier
+  cluster_identifier = aws_docdb_cluster.hackathon-company-doc-cluster-clock.cluster_identifier
   instance_class = "db.t3.medium"
 }
 

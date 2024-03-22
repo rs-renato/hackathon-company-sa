@@ -62,10 +62,16 @@ resource "aws_iam_policy" "hackathon-company-lambda-iam-policy" {
         Resource = ["*"]
       },
       {
+        "Effect": "Allow",
+        "Action": [
+            "sqs:*"
+        ],
+        "Resource": "*"
+        },
+      {
         Effect = "Allow",
         "Action": [
-            "lambda:InvokeFunction",
-            "ses:*"
+            "lambda:InvokeFunction"
         ],
         Resource = ["*"]
       },
@@ -80,14 +86,31 @@ resource "aws_iam_policy" "hackathon-company-lambda-iam-policy" {
   })
 }
 
-# configuracao de permission para invocacao do lambda via api gateway
-resource "aws_lambda_permission" "hackathon-company-lambda-permission" {
+resource "aws_lambda_permission" "hackathon-company-lambda-authorizer-permission" {
   action        = "lambda:InvokeFunction"
   function_name = aws_lambda_function.hackathon-company-lambda-authorizer.function_name
   principal     = "apigateway.amazonaws.com"
 }
 
-# configuracao de role vs policy
+resource "aws_lambda_permission" "hackathon-company-lambda-register-clock-permission" {
+  action        = "lambda:InvokeFunction"
+  function_name = aws_lambda_function.hackathon-company-lambda-register-clock.function_name
+  principal     = "apigateway.amazonaws.com"
+}
+
+resource "aws_lambda_permission" "hackathon-company-lambda-query-clock-permission" {
+  action        = "lambda:InvokeFunction"
+  function_name = aws_lambda_function.hackathon-company-lambda-query-clock.function_name
+  principal     = "apigateway.amazonaws.com"
+}
+
+resource "aws_lambda_permission" "hackathon-company-lambda-request-report-permission" {
+  action        = "lambda:InvokeFunction"
+  function_name = aws_lambda_function.hackathon-company-lambda-request-report.function_name
+  principal     = "apigateway.amazonaws.com"
+}
+
+
 resource "aws_iam_role_policy_attachment" "hackathon-company-lambda-iam-policy-attachment" {
   policy_arn = aws_iam_policy.hackathon-company-lambda-iam-policy.arn
   role = aws_iam_role.hackathon-company-lambda-iam-role.name

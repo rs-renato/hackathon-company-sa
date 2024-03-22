@@ -40,7 +40,7 @@ const processSQSMessage = async (message) => {
         const lambdaClient = initLambdaClient({ region: process.env.AWS_REGION })
 
         const command = new InvokeCommand({
-            FunctionName: "lambda-query-clock",
+            FunctionName: process.env.LAMBDA_QUERY_CLOCK,
             Payload: JSON.stringify(event),
             LogType: LogType.Tail,
         });
