@@ -8,7 +8,7 @@ terraform {
   required_version = ">=1.0"
 
   backend "s3" {
-    bucket  = "hackathon-company-tf-network"
+    bucket  = "hackathon-company-tf-network-fmr"
     key     = "terraform.tfstate"
     region  = "us-east-1"
   }
