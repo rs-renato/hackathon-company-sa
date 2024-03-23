@@ -38,21 +38,18 @@ jobs:
         env:
           AWS_DEFAULT_REGION: us-east-1
 
-      - name: Change Directory to 'iac'
-        run: cd iac
-
-      - name: List Files in 'iac' Directory
-        run: ls -la
-
       - name: Initialize Terraform
         run: terraform init
+        working-directory: iac
 
       - name: Plan Terraform Changes
         run: terraform plan -out=terraform.tfplan
+        working-directory: iac
 
       - name: Apply Terraform Changes
         if: ${{ github.ref == 'refs/heads/main' }}
         run: terraform apply -auto-approve terraform.tfplan
+        working-directory: iac
   sonarcloud:
     runs-on: ubuntu-latest
     steps:
