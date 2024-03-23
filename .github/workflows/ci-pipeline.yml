@@ -41,6 +41,9 @@ jobs:
       - name: Change Directory to 'iac'
         run: cd iac
 
+      - name: List Files in 'iac' Directory
+        run: ls -la
+
       - name: Initialize Terraform
         run: terraform init
 
