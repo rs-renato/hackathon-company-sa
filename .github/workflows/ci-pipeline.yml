@@ -20,6 +20,23 @@ jobs:
         uses: actions/setup-node@v3
       - name: Running coverage tests
         run: npm install && npm run test:cov
+  sonarcloud:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+      - name: Running coverage tests
+        run: npm install && npm run test:cov
+      - name: SonarCloud Scan
+        uses: SonarSource/sonarcloud-github-action@master
+        with:
+          args: >
+            -Dsonar.qualitygate.wait=true
+            -Dsonar.qualitygate.timeout=300
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
   deploy-iac-aws:
     runs-on: ubuntu-latest
     steps:
@@ -50,20 +67,3 @@ jobs:
       #   if: ${{ github.ref == 'refs/heads/main' }}
       #   run: terraform apply -auto-approve terraform.tfplan
       #   working-directory: iac
-  sonarcloud:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v3
-        with:
-          fetch-depth: 0
-      - name: Running coverage tests
-        run: npm install && npm run test:cov
-      - name: SonarCloud Scan
-        uses: SonarSource/sonarcloud-github-action@master
-        with:
-          args: >
-            -Dsonar.qualitygate.wait=true
-            -Dsonar.qualitygate.timeout=300
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
