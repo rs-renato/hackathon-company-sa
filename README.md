@@ -10,8 +10,14 @@
 
 Sistema de registro de ponto. Projeto de conclusão do hackathon da pós gradução em Software Architecture.
 
-# Arquitetura Serverless AWS
-//TODO
+# Arquitetura Serverless AWS (MVP)
+![arquitetura-cloud-aws.png](docs/diagrams/png/arquitetura-cloud-aws.png)
+
+# Arquitetura Evolutiva Serverless AWS (Fase 02)
+![arquitetura](docs/diagrams/png/administracao-registro-ponto.png)
+![edicao-aprovacao](docs/diagrams/png/edicao-aprovacao-registro-ponto.png)
+![notificacao](docs/diagrams/png/notificacao-registro-ponto.png)
+![relatorios](docs/diagrams/png/relatorios-visao-administrativa.png)
 
 # Lambdas
 - [Lambda de Autenticação](docs/lambda-authorizer.md)
