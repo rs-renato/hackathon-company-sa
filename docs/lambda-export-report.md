@@ -3,7 +3,7 @@
 Este lambda é responsável por exportar o relatório de ponto dos funcionários por e-mail, utilizando os serviços AWS Lambda e Amazon SES.
 
 ## Contrato
-- **Entrada**: Consume mensagens da fila SQS contendo a referência do relatório de ponto e as credenciais de autorização.
+- **Entrada**: Consome mensagens da fila SQS contendo a referência do relatório de ponto e as credenciais de autorização.
 - **Saída**: Não possui resposta direta. As mensagens processadas com sucesso são removidas da fila SQS e o relatório é enviado por e-mail.
 
 ## Funcionamento
