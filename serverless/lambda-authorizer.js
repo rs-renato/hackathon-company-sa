@@ -3,63 +3,74 @@ const AWS = require("aws-sdk");
 
 exports.handler = async (event) => {
     try {
-        // Obtenção do payload do corpo da solicitação
+        // Obtaining payload from request body
         const requestBody = JSON.parse(event.body);
-        const { username, senha } = requestBody;
+        const { username, password } = requestBody;
 
-        // Obtenção de client_id e client_secret dos headers
-        const client_id = event.headers.client_id;
-        const client_secret = event.headers.client_secret;
+        // Obtaining client_id and client_secret from headers
+        const client_id = process.env.CLIENT_ID
+        const client_secret = process.env.CLIENT_SECRET
 
-        // Validar entrada
-        if (!client_id || !client_secret || !username || !senha) {
+        // Validating input
+        if (!username || !password) {
+            // Returning validation error
             return {
                 statusCode: 400,
                 headers: {
                     'Content-Type': 'application/json'
                 },
-                body: JSON.stringify({ message: "Requisição inválida! Revise os parâmetros informados." })
+                body: JSON.stringify({ message: "Parâmetros de usuário e/ou senha não encontrados" })
             };
         }
 
-        // Gerar hash secreto
+        // Generating secret hash
         const secretHash = crypto.createHmac('SHA256', client_secret)
-                                 .update(username + client_id)
-                                 .digest('base64');
+            .update(username + client_id)
+            .digest('base64');
 
-        // Parâmetros para a solicitação de autenticação
+        // Parameters for authentication request
         const params = {
             AuthFlow: "USER_PASSWORD_AUTH",
             ClientId: client_id,
             AuthParameters: {
                 USERNAME: username,
-                PASSWORD: senha,
+                PASSWORD: password,
                 SECRET_HASH: secretHash
             }
         };
 
-        // Inicializar o serviço Cognito
-        const cognito = new AWS.CognitoIdentityServiceProvider({ region: process.env.AWS_REGION });
+        // Initializing Cognito service
+        const cognito = initCognito({ region: process.env.AWS_REGION });
 
-        // Iniciar autenticação
+        // Initiating authentication
+        console.log(`Authenticating user ${username} in cognito`)
         const response = await cognito.initiateAuth(params).promise();
 
-        // Retornar token de autenticação
-        return {
+        // Returning authentication token
+        let lambdaResponse = {
             statusCode: 200,
             headers: {
                 'Content-Type': 'application/json'
             },
             body: JSON.stringify({ token: response.AuthenticationResult.IdToken })
-        };
+        }
+
+        console.log(`Lambda Response: ${JSON.stringify(lambdaResponse)}`);
+        return lambdaResponse
+
     } catch (error) {
-        console.error('Erro ao autenticar o usuário', error);
+        console.error('Error authenticating user', error);
+        // Returning authentication error
         return {
-            statusCode: 500,
+            statusCode: error?.statusCode || 500,
             headers: {
                 'Content-Type': 'application/json'
             },
-            body: JSON.stringify({ message: "Erro na autenticação do usuário" })
+            body: JSON.stringify({ message: error?.message || "Não foi possível autenticar o usuário" })
         };
     }
 };
+
+function initCognito(params) {
+    return new AWS.CognitoIdentityServiceProvider(params);
+}

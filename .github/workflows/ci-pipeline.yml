@@ -1,0 +1,69 @@
+name: hackathon-company-sa-ci
+run-name: Hackathon Company SA Pipeline
+
+on: [push]
+jobs:
+  unit-tests:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Use Node.js
+        uses: actions/setup-node@v3
+
+      - name: Run Unit Tests
+        run: npm install && npm run test
+  coverage-tests:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Use Node.js
+        uses: actions/setup-node@v3
+      - name: Running coverage tests
+        run: npm install && npm run test:cov
+  sonarcloud:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+      - name: Running coverage tests
+        run: npm install && npm run test:cov
+      - name: SonarCloud Scan
+        uses: SonarSource/sonarcloud-github-action@master
+        with:
+          args: >
+            -Dsonar.qualitygate.wait=true
+            -Dsonar.qualitygate.timeout=300
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+  deploy-iac-aws:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v2
+
+      - name: Set up Terraform
+        uses: hashicorp/setup-terraform@v1
+        with:
+          terraform_version: 1.0.0
+
+      - name: Configure AWS Credentials
+        run: |
+          aws configure set aws_access_key_id ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws configure set aws_secret_access_key ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        env:
+          AWS_DEFAULT_REGION: us-east-1
+
+      - name: Initialize Terraform
+        run: terraform init
+        working-directory: iac
+
+      - name: Plan Terraform Changes
+        run: terraform plan -out=terraform.tfplan
+        working-directory: iac
+
+      - name: Apply Terraform Changes
+        if: ${{ github.ref == 'refs/heads/main' }}
+        run: terraform apply -auto-approve terraform.tfplan
+        working-directory: iac
